@@ -15,18 +15,20 @@ while (true)
     Console.WriteLine($"Waiting for tcp client");
     var client = listener.AcceptTcpClient();
     Console.WriteLine($"Accepted tcp client");
-    // process request and get response
+
+    // process request
     using var stream = client.GetStream();
-    byte[] buffer = new byte[8192];
-    Span<byte> bytes = new Span<byte>(buffer);
+    Span<byte> bytes = new Span<byte>(new byte[8192]);
     var byteCount = stream.Read(bytes);
-    // send out response
     Console.WriteLine($"Read out {byteCount} bytes");
     var data = Encoding.UTF8.GetString(bytes);
     Console.WriteLine(data);
-    var responseString = @$"HTTP/1.1 200 OK
 
+    // get response
+    var responseString = @$"HTTP/1.1 200 OK
 Hello from SEDC Server";
+
+    // send response
     var responseBytes = Encoding.UTF8.GetBytes(responseString);
     stream.Write(responseBytes);
     client.Close();
