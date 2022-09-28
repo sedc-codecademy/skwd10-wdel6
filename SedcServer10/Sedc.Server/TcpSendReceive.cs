@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Sedc.Server.Requests;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
@@ -17,6 +19,16 @@ namespace Sedc.Server
             Console.WriteLine($"Read out {byteCount} bytes");
             var data = Encoding.UTF8.GetString(bytes);
             Console.WriteLine(data);
+
+            var parser = new RequestParser();
+            var request = parser.TryParse(data);
+            if (!request.IsValid()) {
+                Console.WriteLine("Bad, bad request");
+            } 
+            else
+            {
+                Console.WriteLine("Nice request");
+            }
         }
 
         public static void SendResponse(TcpClient client)

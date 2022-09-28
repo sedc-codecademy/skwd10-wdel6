@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Sedc.Server.Requests
 {
-    internal record Request
+    internal record Request: IRequest
     {
         public Method Method { get; init; }
 
         public string ProtocolVersion { get; private set; } = "1.1";
 
-        public string Url { get; init; }
+        public Url Url { get; init; }
 
         public ReadOnlyDictionary<string, string> Headers { get; init; }
 
