@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sedc.Server", "Sedc.Server\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C2CBE4F5-20CE-4712-BDB7-DC393C5B379F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sedc.Server.Tests", "Sedc.Server.Tests\Sedc.Server.Tests.csproj", "{98A1CBCC-0A4D-4C4A-908C-38AC6D307AA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sedc.Server.Tests", "Sedc.Server.Tests\Sedc.Server.Tests.csproj", "{98A1CBCC-0A4D-4C4A-908C-38AC6D307AA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatternMatchingDemo", "PatternMatchingDemo\PatternMatchingDemo.csproj", "{C72782D6-1E52-4B47-BA31-8775257C180A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{98A1CBCC-0A4D-4C4A-908C-38AC6D307AA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98A1CBCC-0A4D-4C4A-908C-38AC6D307AA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98A1CBCC-0A4D-4C4A-908C-38AC6D307AA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C72782D6-1E52-4B47-BA31-8775257C180A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C72782D6-1E52-4B47-BA31-8775257C180A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C72782D6-1E52-4B47-BA31-8775257C180A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C72782D6-1E52-4B47-BA31-8775257C180A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

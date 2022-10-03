@@ -2,19 +2,24 @@
 using System.Net;
 using System.Text;
 using System.IO;
+using Sedc.Server.Requests;
 
 namespace Sedc.Server
 {
     public class Server
     {
         public int Port { get; private set; }
+        public bool DevMode { get; private set; }
+
+        public IRequestParserFactory RequestParserFactory { get; private set; }
 
         public Server(ServerOptions options) {
             Port = options.Port;
+            DevMode = options.DevMode;
         }
-        public void Configure(object? configuration = null)
+        public void Configure(ServerConfig configuration)
         {
-            Console.WriteLine("Server is being configured");
+            RequestParserFactory = configuration.RequestParserFactory;
         }
 
         public void Start()
@@ -30,12 +35,25 @@ namespace Sedc.Server
             {
                 // wait for a request
                 var client = listener.AcceptTcpClient();
+                try
+                {
+                    // process request
+                    var request = TcpSendReceive.ProcessRequest(client, RequestParserFactory());
 
-                // process request
-                TcpSendReceive.ProcessRequest(client);
+                    Console.WriteLine(request);
 
-                // send response
-                TcpSendReceive.SendResponse(client);
+                    // send response
+                    TcpSendReceive.SendResponse(client);
+                } 
+                catch (Exception ex)
+                {
+                    TcpSendReceive.SendErrorResponse(client, DevMode, ex);
+                    Console.WriteLine($"Exception {ex.GetType().FullName} occured. Message: {ex.Message}");
+                }
+                finally
+                {
+                    client?.Close();
+                }
             }
         }
     }

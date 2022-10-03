@@ -21,9 +21,34 @@ namespace Sedc.Server.Requests
 
         public string RawRequest { get; init; }
 
-        public Request() {
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"Method: {Method.Name}");
+            sb.AppendLine($"URL: {Url.Path.RawValue}");
+            if (Url.Query.Count > 0)
+            {
+                sb.AppendLine("Query:");
+                foreach (var (key, value) in Url.Query)
+                {
+                    sb.AppendLine($"  {key} = {value}");
+                }
+            }
+            if (Headers.Count > 0)
+            {
+                sb.AppendLine("Headers:");
+                foreach (var (key, value) in Headers)
+                {
+                    sb.AppendLine($"  {key}: {value}");
+                }
+            }
 
+            sb.AppendLine("Body:");
+            sb.AppendLine(Body);
+
+            return sb.ToString();
         }
+
     }
 
 }
