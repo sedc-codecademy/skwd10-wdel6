@@ -16,6 +16,38 @@ namespace Sedc.Server.Requests
 
         public RequestParser() { }
 
+        private (Dictionary<string, string> headers, bool status) ParseHeaders(IEnumerable<string> headerLines)
+        {
+            var headers = new Dictionary<string, string>();
+
+            foreach (var header in headerLines)
+            {
+                // if the header body contains :<whitespace> it will be ignored
+                var parts = header.Split(": ");
+                if (parts.Length < 2)
+                {
+                    // todo: Investigate if this can be used as an attack vector
+                    var result = new Dictionary<string, string>
+                    {
+                        { "Header", header }
+                    };
+                    return (result, false);
+                }
+                var key = parts[0];
+                var value = parts[1];
+                if (headers.ContainsKey(key))
+                {
+                    headers[key] += $";{value}";
+                }
+                else
+                {
+                    headers.Add(key, value);
+                }
+            }
+
+            return (headers, true);
+        }
+
         public IRequest TryParse(string requestData)
         {
             var requestLines = requestData.Split(Environment.NewLine);
@@ -31,31 +63,14 @@ namespace Sedc.Server.Requests
             var url = rmatch.Groups[2].Value;
 
             var headerLines = requestLines.Skip(1).TakeWhile(line => !string.IsNullOrEmpty(line));
-
-            var headers = new Dictionary<string, string>();
-
-            foreach (var header in headerLines)
+            var (headers, headerStatus) = ParseHeaders(headerLines);
+            if (!headerStatus)
             {
-                // if the header body contains :<whitespace> it will be ignored
-                var parts = header.Split(": ");
-                if (parts.Length < 2) {
-                    // todo: Investigate if this can be used as an attack vector
-                    return new InvalidRequest($"Invalid HTTP request received: Invalid header line {header}");
-                }
-                var key = parts[0];
-                var value = parts[1];
-                if (headers.ContainsKey(key))
-                {
-                    headers[key] += $";{value}";
-                } 
-                else
-                {
-                    headers.Add(key, value);
-                }
+                var badHeader = headers["Header"];
+                return new InvalidRequest($"Invalid HTTP request received: Invalid header line {badHeader}");
             }
 
             var body = requestLines.SkipWhile(line => !string.IsNullOrEmpty(line)).Skip(1);
-
             var result = new Request
             {
                 Body = string.Join(Environment.NewLine, body),
@@ -66,5 +81,20 @@ namespace Sedc.Server.Requests
             };
             return result;
         }
+
+
+        //public object DoStuff(object param)
+        //{
+        //    // guard-clause-1
+        //    // guard-clause-2
+        //    // guard-clause-3
+
+        //    return DoStuffInteral(param);
+        //}
+
+        //private object DoStuffInteral(object param)
+        //{
+        //    // ....
+        //}
     }
 }

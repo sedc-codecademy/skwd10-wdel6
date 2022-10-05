@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Sedc.Server.Responses
 {
-    public class ResponseStatus
+    public record ResponseStatus
     {
+        public int Id { get; set; }
+        public string Message { get; set; }
+
+        public static ResponseStatus OK = new ResponseStatus { Id = 200, Message = "OK" };
     }
 }

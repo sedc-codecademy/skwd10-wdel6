@@ -3,6 +3,8 @@ using System.Net;
 using System.Text;
 using System.IO;
 using Sedc.Server.Requests;
+using Sedc.Server.Responses;
+using Sedc.Server.Processing;
 
 namespace Sedc.Server
 {
@@ -25,6 +27,7 @@ namespace Sedc.Server
         public void Start()
         {
             Console.WriteLine("Running server");
+            var processor = new RequestProcessor();
 
             var address = IPAddress.Any;
 
@@ -41,9 +44,16 @@ namespace Sedc.Server
                     var request = TcpSendReceive.ProcessRequest(client, RequestParserFactory());
 
                     Console.WriteLine(request);
+                    if (request is InvalidRequest invalidRequest)
+                    {
+                        TcpSendReceive.SendRequestErrorResponse(client, DevMode, invalidRequest);
+                        continue;
+                    }
+
+                    var response = processor.ProcessRequest(request as Request);
 
                     // send response
-                    TcpSendReceive.SendResponse(client);
+                    TcpSendReceive.SendResponse(client, response);
                 } 
                 catch (Exception ex)
                 {
@@ -56,5 +66,6 @@ namespace Sedc.Server
                 }
             }
         }
+
     }
 }
