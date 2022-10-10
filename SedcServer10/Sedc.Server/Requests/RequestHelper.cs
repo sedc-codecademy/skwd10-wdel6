@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sedc.Server.Requests
 {
-    internal static class RequestHelper
+    internal static partial class RequestHelper
     {
         public static bool IsValid(this IRequest request)
         {

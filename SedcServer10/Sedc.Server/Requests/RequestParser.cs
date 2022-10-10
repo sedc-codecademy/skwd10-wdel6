@@ -10,13 +10,11 @@ using System.Threading.Tasks;
 
 namespace Sedc.Server.Requests
 {
-    internal class RequestParser: IRequestParser
+    internal static partial class RequestHelper
     {
         private static readonly Regex RequestLineRegex = new Regex(@"([A-Z]+) (.*) HTTP\/(.*)$");
 
-        public RequestParser() { }
-
-        private (Dictionary<string, string> headers, bool status) ParseHeaders(IEnumerable<string> headerLines)
+        private static (Dictionary<string, string> headers, bool status) ParseHeaders(IEnumerable<string> headerLines)
         {
             var headers = new Dictionary<string, string>();
 
@@ -48,7 +46,7 @@ namespace Sedc.Server.Requests
             return (headers, true);
         }
 
-        public IRequest TryParse(string requestData)
+        public static IRequest TryParse(string requestData)
         {
             var requestLines = requestData.Split(Environment.NewLine);
 

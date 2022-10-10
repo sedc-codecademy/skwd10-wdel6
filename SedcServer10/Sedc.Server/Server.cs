@@ -13,7 +13,7 @@ namespace Sedc.Server
         public int Port { get; private set; }
         public bool DevMode { get; private set; }
 
-        public IRequestParserFactory RequestParserFactory { get; private set; }
+        public ParseRequest RequestParser { get; private set; }
 
         public Server(ServerOptions options) {
             Port = options.Port;
@@ -21,7 +21,7 @@ namespace Sedc.Server
         }
         public void Configure(ServerConfig configuration)
         {
-            RequestParserFactory = configuration.RequestParserFactory;
+            RequestParser = configuration.RequestParser;
         }
 
         public void Start()
@@ -41,7 +41,7 @@ namespace Sedc.Server
                 try
                 {
                     // process request
-                    var request = TcpSendReceive.ProcessRequest(client, RequestParserFactory());
+                    var request = TcpSendReceive.ProcessRequest(client, RequestParser);
 
                     Console.WriteLine(request);
                     if (request is InvalidRequest invalidRequest)
@@ -50,7 +50,7 @@ namespace Sedc.Server
                         continue;
                     }
 
-                    var response = processor.ProcessRequest(request as Request);
+                    var response = processor.ProcessRequest((Request)request);
 
                     // send response
                     TcpSendReceive.SendResponse(client, response);

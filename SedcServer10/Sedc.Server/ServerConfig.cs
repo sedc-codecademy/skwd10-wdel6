@@ -10,10 +10,10 @@ namespace Sedc.Server
 {
     public class ServerConfig
     {
-        public IRequestParserFactory RequestParserFactory { get; set; }
+        public ParseRequest RequestParser { get; set; }
         public ServerConfig() 
         {
-            RequestParserFactory = () => new RequestParser();
+            RequestParser = RequestHelper.TryParse;
         }
     }
 }

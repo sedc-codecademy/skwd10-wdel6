@@ -13,14 +13,14 @@ namespace Sedc.Server
 {
     internal static class TcpSendReceive
     {
-        public static IRequest ProcessRequest(TcpClient client, IRequestParser parser)
+        public static IRequest ProcessRequest(TcpClient client, ParseRequest parse)
         {
             var stream = client.GetStream();
             var bytes = new byte[8192];
             var byteCount = stream.Read(bytes);
             var data = Encoding.UTF8.GetString(bytes, 0, byteCount);
 
-            var request = parser.TryParse(data);
+            var request = parse(data);
             return request;
         }
 

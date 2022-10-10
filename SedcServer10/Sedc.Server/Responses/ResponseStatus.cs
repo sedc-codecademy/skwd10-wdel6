@@ -8,9 +8,10 @@ namespace Sedc.Server.Responses
 {
     public record ResponseStatus
     {
-        public int Id { get; set; }
-        public string Message { get; set; }
+        public int Id { get; init; }
+        public string Message { get; init; } = string.Empty;
 
         public static ResponseStatus OK = new ResponseStatus { Id = 200, Message = "OK" };
+        public static ResponseStatus NotFound = new ResponseStatus { Id = 404, Message = "Not Found" };
     }
 }
