@@ -22,4 +22,11 @@ namespace Sedc.Server.Responses
         {
         }
     }
+
+    internal class ServerErrorResponse : ErrorTextResponse
+    {
+        public ServerErrorResponse() : base(ResponseStatus.InternalServerError)
+        {
+        }
+    }
 }

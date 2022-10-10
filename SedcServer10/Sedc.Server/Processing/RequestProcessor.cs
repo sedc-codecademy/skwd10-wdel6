@@ -13,11 +13,11 @@ namespace Sedc.Server.Processing
 {
     internal class RequestProcessor
     {
-        public List<Responder> Responders { get; set; } = new List<Responder>
+        private List<Responder> Responders = new List<Responder>
         {
-            new FaviconResponder(),
-            new FileResponder(),
-            new DefaultResponder(),
+            ResponderRepository.FaviconResponder,
+            ResponderRepository.GetFileResponder("site", @"C:\Source\SEDC\skwd10-wdel6\site"),
+            ResponderRepository.DefaultResponder
         };
         public RequestProcessor() { 
         
@@ -35,6 +35,10 @@ namespace Sedc.Server.Processing
             throw new ServerException("First responder failed to appear");
         }
 
-
+        internal void AddFileResponder(string route, string path)
+        {
+            var responder = ResponderRepository.GetFileResponder(route, path);
+            Responders.Insert(Responders.Count-1, responder);
+        }
     }
 }

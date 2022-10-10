@@ -1,71 +1,42 @@
-﻿using Sedc.Server.Requests;
+﻿using Sedc.Server.Exceptions;
+using Sedc.Server.Requests;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Sedc.Server.Responses
 {
-    internal abstract class Responder
+    public delegate IResponse ResponseGetter(Request request);
+
+    public delegate bool RequestPredicate(Request request);
+
+    public class Responder
     {
-        public Responder() { }
+        public RequestPredicate IsApplicable { get; init; } = _ => false;
 
-        public abstract bool IsApplicable(Request request);
-
-        public abstract IResponse GenerateResponse(Request request);
+        public ResponseGetter GenerateResponse { get; init; } = _ => new ErrorTextResponse(ResponseStatus.InternalServerError);
     }
 
-    internal class FaviconResponder : Responder
+    public static class ResponderRepository
     {
-        public override IResponse GenerateResponse(Request request)
+        public static Responder FaviconResponder = new Responder
         {
-            return new BinaryResponse
+            IsApplicable = (Request request) => request.Url.Path.RawValue == "/favicon.ico",
+            GenerateResponse = (Request request) => new BinaryResponse
             {
                 Body = File.ReadAllBytes(@"C:\Source\SEDC\skwd10-wdel6\SedcServer10\Files\sedc.png"),
                 Headers = new Dictionary<string, string>
                     {
                         {"Content-Type", "image/png" }
                     }
-            };
-        }
-
-        public override bool IsApplicable(Request request)
-        {
-            return request.Url.Path.RawValue == "/favicon.ico";
-        }
-    }
-
-    internal class FileResponder: Responder
-    {
-        public override IResponse GenerateResponse(Request request)
-        {
-            var basePath = @"C:\Source\SEDC\skwd10-wdel6\site";
-            var filePath = request.Url.Path.Paths.Length == 1
-                ? "index.html"
-                : request.Url.Path.Paths[1];
-            var fullPath = Path.Combine(basePath, filePath);
-            if (!File.Exists(fullPath))
-            {
-                return new NotFoundResponse();
             }
-            var bytes = File.ReadAllBytes(fullPath);
-            return new BinaryResponse
-            {
-                Body = bytes,
-            };
-        }
+        };
 
-        public override bool IsApplicable(Request request)
-        {
-            return request.Url.Path.Paths.Length > 0 && request.Url.Path.Paths[0] == "site";
-        }
-    }
-
-    internal class DefaultResponder: Responder
-    {
-        private static string GetHeadersHtml(Request request)
+        private static readonly Func<Request, string> GetHeadersHtml = (Request request) =>
         {
             var sb = new StringBuilder();
             sb.Append("<ul>");
@@ -76,17 +47,21 @@ namespace Sedc.Server.Responses
             sb.Append("</ul>");
 
             return sb.ToString();
+        };
 
-        }
-        public override IResponse GenerateResponse(Request request)
+
+        public static Responder DefaultResponder = new Responder
         {
-            var result = new TextResponse
+            IsApplicable = _ => true,
+            GenerateResponse = (Request request) =>
             {
-                Headers = new Dictionary<string, string>
+                var result = new TextResponse
+                {
+                    Headers = new Dictionary<string, string>
                 {
                     {"Content-Type", "text/html" }
                 },
-                Body = $"""
+                    Body = $"""
     <h1>Hello from SEDC Server!</h1>
     <h2>The requested method was {request.Method.Name}</h2>
     <h2>The requested path was {request.Url}</h2>
@@ -95,13 +70,47 @@ namespace Sedc.Server.Responses
     <h2>Body:</h2>
     <div>{request.Body}</div>
 """
+                };
+                return result;
+            }
+        };
+
+        public static Responder GetFileResponder(string route, string basePath, string defaultDocument = "index.html")
+        {
+            if (string.IsNullOrEmpty(route))
+            {
+                throw new ServerException($"Parameter {nameof(route)} cannot be empty");
+            }
+            if (string.IsNullOrEmpty(basePath))
+            {
+                throw new ServerException($"Parameter {nameof(basePath)} cannot be empty");
+            }
+            if (!Directory.Exists(basePath))
+            {
+                throw new ServerException($"Directory {nameof(basePath)} cannot be accessed");
+            }
+
+            return new Responder
+            {
+                IsApplicable = (Request request) => request.Url.Path.Paths.Length > 0 && request.Url.Path.Paths[0] == route,
+                GenerateResponse = (Request request) =>
+                {
+                    var filePath = request.Url.Path.Paths.Length == 1
+                        ? defaultDocument
+                        : request.Url.Path.Paths[1];
+                    var fullPath = Path.Combine(basePath, filePath);
+                    if (!File.Exists(fullPath))
+                    {
+                        return new NotFoundResponse();
+                    }
+                    var bytes = File.ReadAllBytes(fullPath);
+                    return new BinaryResponse
+                    {
+                        Body = bytes,
+                    };
+                }
             };
-            return result;
         }
 
-        public override bool IsApplicable(Request request)
-        {
-            return true;
-        }
     }
 }

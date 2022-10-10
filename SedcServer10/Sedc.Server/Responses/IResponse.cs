@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sedc.Server.Responses
 {
-    internal interface IResponse
+    public interface IResponse
     {
         ResponseStatus Status { get; set; }
 
@@ -18,7 +18,7 @@ namespace Sedc.Server.Responses
         byte[] GetBodyBytes();
     }
 
-    internal interface IResponse<T>: IResponse
+    public interface IResponse<T>: IResponse
     {
         T Body { get; set; }
     }

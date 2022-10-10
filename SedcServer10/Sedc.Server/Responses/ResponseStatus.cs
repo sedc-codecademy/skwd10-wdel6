@@ -13,5 +13,6 @@ namespace Sedc.Server.Responses
 
         public static ResponseStatus OK = new ResponseStatus { Id = 200, Message = "OK" };
         public static ResponseStatus NotFound = new ResponseStatus { Id = 404, Message = "Not Found" };
+        public static ResponseStatus InternalServerError = new ResponseStatus { Id = 500, Message = "Internal Server Error" };
     }
 }

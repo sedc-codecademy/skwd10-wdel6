@@ -13,6 +13,8 @@ namespace Sedc.Server
         public int Port { get; private set; }
         public bool DevMode { get; private set; }
 
+        private RequestProcessor processor = new();
+
         public ParseRequest RequestParser { get; private set; }
 
         public Server(ServerOptions options) {
@@ -27,7 +29,7 @@ namespace Sedc.Server
         public void Start()
         {
             Console.WriteLine("Running server");
-            var processor = new RequestProcessor();
+            
 
             var address = IPAddress.Any;
 
@@ -67,5 +69,9 @@ namespace Sedc.Server
             }
         }
 
+        public void RegisterStaticSite(string route, string path)
+        {
+            processor.AddFileResponder(route, path);
+        }
     }
 }

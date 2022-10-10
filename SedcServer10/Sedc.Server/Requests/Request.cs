@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sedc.Server.Requests
 {
-    internal record Request: IRequest
+    public record Request: IRequest
     {
         public Method Method { get; init; }
 
