@@ -112,5 +112,33 @@ namespace Sedc.Server.Responses
             };
         }
 
+        internal static Responder GetApiResponder(string route, object apiProcessor)
+        {
+            return new Responder
+            {
+                IsApplicable = (Request request) =>
+                {
+                    if (request.Url.Path.Length <= 2) {
+                        return false;
+                    }
+                    if (request.Url.Path.Paths[0] != "api")
+                    {
+                        return false;
+                    }
+                    if (request.Url.Path.Paths[0] != route)
+                    {
+                        return false;
+                    }
+                    return true;
+                },
+                GenerateResponse = (Request request) =>
+                {
+                    return new TextResponse
+                    {
+                        Body = $"Api response on {request.Url.Path.RawValue}"
+                    };
+                }
+            };
+        }
     }
 }

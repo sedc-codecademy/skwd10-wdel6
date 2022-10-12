@@ -5,6 +5,7 @@ using System.IO;
 using Sedc.Server.Requests;
 using Sedc.Server.Responses;
 using Sedc.Server.Processing;
+using Sedc.Server.Logging;
 
 namespace Sedc.Server
 {
@@ -13,13 +14,18 @@ namespace Sedc.Server
         public int Port { get; private set; }
         public bool DevMode { get; private set; }
 
-        private RequestProcessor processor = new();
+        private readonly ILogger Logger = new ConsoleLogger { LogLevel = LogLevel.Info };
+
+        private readonly RequestProcessor processor;
+        
 
         public ParseRequest RequestParser { get; private set; }
 
         public Server(ServerOptions options) {
             Port = options.Port;
             DevMode = options.DevMode;
+
+            processor = new RequestProcessor(Logger);
         }
         public void Configure(ServerConfig configuration)
         {
@@ -28,26 +34,29 @@ namespace Sedc.Server
 
         public void Start()
         {
-            Console.WriteLine("Running server");
+            Logger.Info("Running server");
             
 
             var address = IPAddress.Any;
 
             TcpListener listener = new TcpListener(address, Port);
             listener.Start();
+            Logger.Debug($"Started listening on port {Port}");
 
             while (true)
             {
                 // wait for a request
+                Logger.Debug("Waiting for a client");
                 var client = listener.AcceptTcpClient();
                 try
                 {
                     // process request
+                    Logger.Debug("Started processing request");
                     var request = TcpSendReceive.ProcessRequest(client, RequestParser);
-
-                    Console.WriteLine(request);
+                    Logger.Debug($"Processed request {request}");
                     if (request is InvalidRequest invalidRequest)
                     {
+                        Logger.Error($"Invalid request detected {invalidRequest}");
                         TcpSendReceive.SendRequestErrorResponse(client, DevMode, invalidRequest);
                         continue;
                     }
@@ -60,7 +69,7 @@ namespace Sedc.Server
                 catch (Exception ex)
                 {
                     TcpSendReceive.SendErrorResponse(client, DevMode, ex);
-                    Console.WriteLine($"Exception {ex.GetType().FullName} occured. Message: {ex.Message}");
+                    Logger.Error($"Exception {ex.GetType().FullName} occured. Message: {ex.Message}");
                 }
                 finally
                 {
@@ -72,6 +81,11 @@ namespace Sedc.Server
         public void RegisterStaticSite(string route, string path)
         {
             processor.AddFileResponder(route, path);
+        }
+
+        public void RegisterApi(string route, object apiProcessor)
+        {
+            processor.AddApiResponder(route, apiProcessor);
         }
     }
 }
