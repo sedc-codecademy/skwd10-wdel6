@@ -1,6 +1,6 @@
 ﻿using Sedc.Server;
 
-Server s = new Server(new ServerOptions(Port: 668, DevMode: true));
+Server s = new Server(new ServerOptions(Port: 668, DevMode: false));
 
 s.Configure(new ServerConfig());
 

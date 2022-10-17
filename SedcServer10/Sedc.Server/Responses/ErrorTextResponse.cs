@@ -23,6 +23,13 @@ namespace Sedc.Server.Responses
         }
     }
 
+    internal class BadRequestResponse : ErrorTextResponse
+    {
+        public BadRequestResponse() : base(ResponseStatus.BadRequest)
+        {
+        }
+    }
+
     internal class ServerErrorResponse : ErrorTextResponse
     {
         public ServerErrorResponse() : base(ResponseStatus.InternalServerError)

@@ -25,11 +25,17 @@ namespace Sedc.Server
             Port = options.Port;
             DevMode = options.DevMode;
 
+            if (DevMode)
+            {
+                Logger = new ConsoleLogger { LogLevel = LogLevel.Debug };
+            }
+
             processor = new RequestProcessor(Logger);
         }
         public void Configure(ServerConfig configuration)
         {
             RequestParser = configuration.RequestParser;
+
         }
 
         public void Start()

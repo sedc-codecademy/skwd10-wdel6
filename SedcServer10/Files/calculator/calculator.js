@@ -4,7 +4,12 @@ const calculate = async () => {
     const operator = document.getElementById('operation').value;
 
     const result = await getResult(first, second, operator);
-    document.getElementById('result').value = result.result;
+
+    const response = (result.success)
+     ? `${result.first} ${result.operation.symbol} ${result.second} = ${result.result}`
+     : `Error occured while calculating: ${result.first} ${result.operation.symbol} ${result.second}`;
+
+    document.getElementById('result').innerHTML = response;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

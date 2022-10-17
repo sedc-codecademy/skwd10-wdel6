@@ -32,15 +32,17 @@ namespace Sedc.Server.Processing
             {
                 if (responder.IsApplicable(request))
                 {
+                    Logger.Debug($"Selected {responder.Name} for request with url {request.Url.Path.RawValue}");
                     return responder.GenerateResponse(request);
                 }
+                Logger.Debug($"Skipped {responder.Name} for request with url {request.Url.Path.RawValue}");
             };
             throw new ServerException("First responder failed to appear");
         }
 
         internal void AddApiResponder(string route, object apiProcessor)
         {
-            var responder = ResponderRepository.GetApiResponder(route, apiProcessor);
+            var responder = ResponderRepository.GetApiResponder(route, apiProcessor, Logger);
             Responders.Insert(Responders.Count - 1, responder);
         }
 

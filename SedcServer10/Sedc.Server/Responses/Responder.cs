@@ -1,4 +1,5 @@
 ﻿using Sedc.Server.Exceptions;
+using Sedc.Server.Logging;
 using Sedc.Server.Requests;
 
 using System;
@@ -16,6 +17,8 @@ namespace Sedc.Server.Responses
 
     public class Responder
     {
+        public string Name { get; init; } = string.Empty;
+
         public RequestPredicate IsApplicable { get; init; } = _ => false;
 
         public ResponseGetter GenerateResponse { get; init; } = _ => new ErrorTextResponse(ResponseStatus.InternalServerError);
@@ -25,6 +28,7 @@ namespace Sedc.Server.Responses
     {
         public static Responder FaviconResponder = new Responder
         {
+            Name = nameof(FaviconResponder),
             IsApplicable = (Request request) => request.Url.Path.RawValue == "/favicon.ico",
             GenerateResponse = (Request request) => new BinaryResponse
             {
@@ -52,6 +56,7 @@ namespace Sedc.Server.Responses
 
         public static Responder DefaultResponder = new Responder
         {
+            Name = nameof(DefaultResponder),
             IsApplicable = _ => true,
             GenerateResponse = (Request request) =>
             {
@@ -92,6 +97,7 @@ namespace Sedc.Server.Responses
 
             return new Responder
             {
+                Name = $"FileResponder for {route} at {basePath}",
                 IsApplicable = (Request request) => request.Url.Path.Paths.Length > 0 && request.Url.Path.Paths[0] == route,
                 GenerateResponse = (Request request) =>
                 {
@@ -112,30 +118,63 @@ namespace Sedc.Server.Responses
             };
         }
 
-        internal static Responder GetApiResponder(string route, object apiProcessor)
+        internal static Responder GetApiResponder(string route, object apiProcessor, ILogger logger)
         {
             return new Responder
             {
+                Name = $"ApiResponder for {route}",
                 IsApplicable = (Request request) =>
                 {
                     if (request.Url.Path.Length <= 2) {
+                        logger.Debug("ApiResponder not applicable because url path has less than two parts");
                         return false;
                     }
                     if (request.Url.Path.Paths[0] != "api")
                     {
+                        logger.Debug("ApiResponder not applicable because first url path is not \"api\" ");
                         return false;
                     }
-                    if (request.Url.Path.Paths[0] != route)
+                    if (request.Url.Path.Paths[1] != route)
                     {
+                        logger.Debug($"ApiResponder not applicable because second url path is not \"{route}\"");
                         return false;
                     }
                     return true;
                 },
                 GenerateResponse = (Request request) =>
                 {
-                    return new TextResponse
+                    // extract method
+                    var method = request.Url.Path.Paths[2];
+
+                    // extract parameters
+                    var parameters = request.Url.Path.Paths[3..];
+
+                    // call method with parameters
+                    var controllerMethod = ApiHelper.FindMethod(apiProcessor, method);
+                    if (controllerMethod == null)
                     {
-                        Body = $"Api response on {request.Url.Path.RawValue}"
+                        return new NotFoundResponse();
+                    }
+
+                    var paramMatch = ApiHelper.MatchParams(controllerMethod, parameters);
+                    if (!paramMatch.Valid)
+                    {
+                        return new BadRequestResponse();
+                    }
+
+                    var result = ApiHelper.CallMethod(apiProcessor, controllerMethod, paramMatch);
+                    if (result == null)
+                    {
+                        return new BadRequestResponse();
+                    }
+
+                    // serialize response to json
+
+
+                    // return response
+                    return new JsonResponse
+                    {
+                        Body = JsonSerializer.Serialize(result)
                     };
                 }
             };
