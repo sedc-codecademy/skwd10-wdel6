@@ -46,6 +46,12 @@ namespace Sedc.Server.Processing
             Responders.Insert(Responders.Count - 1, responder);
         }
 
+        internal void AddApiResponder<T>(string route)
+        {
+            var responder = ResponderRepository.GetApiResponder<T>(route, Logger);
+            Responders.Insert(Responders.Count - 1, responder);
+        }
+
         internal void AddFileResponder(string route, string path)
         {
             var responder = ResponderRepository.GetFileResponder(route, path);

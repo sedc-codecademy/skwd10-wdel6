@@ -15,11 +15,12 @@ namespace Sedc.Server.Responses
             return first + rest;
         }
 
-        public static string Serialize(object? obj) { 
+        public static string Serialize(object? obj) {
             if (obj == null) { 
                 throw new ArgumentNullException(nameof(obj)); 
             }
             var type = obj.GetType();
+
             if (type == typeof(string))
             {
                 return $"\"{(string)obj}\"";
@@ -42,6 +43,16 @@ namespace Sedc.Server.Responses
             }
 
             // if the object is a collection?
+            if (type.IsArray) { 
+                var arr = (object[])obj;
+                var listValues = new List<string>();
+                foreach (var item in arr)
+                {
+                    listValues.Add(Serialize(item));
+                }
+                var result = $"[{string.Join(", ", listValues)}]";
+                return result;
+            }
 
             var propValues = new List<string>();
             var props = type.GetProperties();

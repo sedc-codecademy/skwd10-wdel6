@@ -179,5 +179,71 @@ namespace Sedc.Server.Responses
                 }
             };
         }
+
+        internal static Responder GetApiResponder<T>(string route, ILogger logger)
+        {
+            return new Responder
+            {
+                Name = $"ApiResponder for {route}",
+                IsApplicable = (Request request) =>
+                {
+                    if (request.Url.Path.Length <= 2)
+                    {
+                        logger.Debug("ApiResponder not applicable because url path has less than two parts");
+                        return false;
+                    }
+                    if (request.Url.Path.Paths[0] != "api")
+                    {
+                        logger.Debug("ApiResponder not applicable because first url path is not \"api\" ");
+                        return false;
+                    }
+                    if (request.Url.Path.Paths[1] != route)
+                    {
+                        logger.Debug($"ApiResponder not applicable because second url path is not \"{route}\"");
+                        return false;
+                    }
+                    return true;
+                },
+                GenerateResponse = (Request request) =>
+                {
+                    // extract method
+                    var method = request.Url.Path.Paths[2];
+
+                    // extract parameters
+                    var parameters = request.Url.Path.Paths[3..];
+
+                    var apiProcessor = ApiHelper.CreateProcessor(typeof(T), logger);
+
+                    // call method with parameters
+                    var controllerMethod = ApiHelper.FindMethod(apiProcessor, method);
+                    if (controllerMethod == null)
+                    {
+                        return new NotFoundResponse();
+                    }
+
+                    var paramMatch = ApiHelper.MatchParams(controllerMethod, parameters);
+                    if (!paramMatch.Valid)
+                    {
+                        return new BadRequestResponse();
+                    }
+
+                    var result = ApiHelper.CallMethod(apiProcessor, controllerMethod, paramMatch);
+                    if (result == null)
+                    {
+                        return new BadRequestResponse();
+                    }
+
+                    // serialize response to json
+
+
+                    // return response
+                    return new JsonResponse
+                    {
+                        Body = JsonSerializer.Serialize(result)
+                    };
+                }
+            };
+        }
+
     }
 }

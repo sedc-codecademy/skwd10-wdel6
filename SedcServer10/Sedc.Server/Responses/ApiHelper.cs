@@ -1,5 +1,6 @@
 ﻿using Sedc.Server.Attributes;
 using Sedc.Server.Exceptions;
+using Sedc.Server.Logging;
 
 using System.Reflection;
 
@@ -114,6 +115,23 @@ namespace Sedc.Server.Responses
             }
 
             return result;
+        }
+
+        internal static object CreateProcessor(Type type, ILogger logger)
+        {
+            var ctor = type.GetConstructor(new Type[] { typeof(ILogger) });
+            if (ctor != null)
+            {
+                return ctor.Invoke(new object[] { logger });
+            }
+
+            ctor = type.GetConstructor(new Type[0]);
+            if (ctor != null)
+            {
+                return ctor.Invoke(new object[0]);
+            }
+
+            throw new ServerException($"Unable to construct controller of type ${type.FullName}");
         }
     }
 }

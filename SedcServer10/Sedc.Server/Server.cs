@@ -93,5 +93,10 @@ namespace Sedc.Server
         {
             processor.AddApiResponder(route, apiProcessor);
         }
+
+        public void RegisterApi<T>(string route)
+        {
+            processor.AddApiResponder<T>(route);
+        }
     }
 }
